@@ -3,6 +3,8 @@ use std::{fmt, process::exit};
 #[derive(Debug)]
 pub enum ErrorCode {
     ArgumentInvaild(&'static str),
+    NotSupported(u8),
+    ContainerError(u8),
 }
 
 impl ErrorCode {
@@ -16,6 +18,15 @@ impl fmt::Display for ErrorCode {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             ErrorCode::ArgumentInvaild(element) => write!(f, "Invalid argument: {}", element),
+            ErrorCode::NotSupported(element) => {
+                let reason = match element {
+                    0 => "kernel version",
+                    1 => "machine architecture",
+                    _ => "Unknown reason",
+                };
+                write!(f, "Not supported by: {}", reason)
+            }
+            ErrorCode::ContainerError(_) => write!(f, "Container Error"),
             _ => write!(f, "Unknown Error: {:?}", self),
         }
     }
