@@ -1,3 +1,4 @@
+use crate::error::ErrorCode;
 use std::path::PathBuf;
 use structopt::StructOpt;
 
@@ -21,19 +22,19 @@ pub struct Args {
     pub mount_dir: PathBuf,
 }
 
-pub fn parse_args() -> Args {
+pub fn parse_args() -> Result<Args, ErrorCode> {
     let args = Args::from_args();
 
-    if (args.debug) {
+    if args.debug {
         setup_log(log::LevelFilter::Debug);
     } else {
         setup_log(log::LevelFilter::Info);
     }
 
-    args
+    Ok(args)
 }
 
-pub fn setup_log(level: log::LevelFilter) {
+fn setup_log(level: log::LevelFilter) {
     env_logger::Builder::from_default_env()
         .format_timestamp_secs()
         .filter(None, level)
