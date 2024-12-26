@@ -22,13 +22,20 @@ pub struct Args {
     pub mount_dir: PathBuf,
 }
 
+// e.g. curnc --debug --command /bin/bash -mount ../ubuntu-fs -uid 0
 pub fn parse_args() -> Result<Args, ErrorCode> {
     let args = Args::from_args();
 
+    // setup logging level
     if args.debug {
         setup_log(log::LevelFilter::Debug);
     } else {
         setup_log(log::LevelFilter::Info);
+    }
+
+    // validate arguments
+    if !args.mount_dir.exists() || !args.mount_dir.is_dir() {
+        return Err(ErrorCode::ArgumentInvaild("mount"));
     }
 
     Ok(args)

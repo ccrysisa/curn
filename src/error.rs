@@ -1,7 +1,9 @@
 use std::{fmt, process::exit};
 
 #[derive(Debug)]
-pub enum ErrorCode {}
+pub enum ErrorCode {
+    ArgumentInvaild(&'static str),
+}
 
 impl ErrorCode {
     pub fn get_retcode(&self) -> i32 {
@@ -9,10 +11,12 @@ impl ErrorCode {
     }
 }
 
+#[allow(unreachable_patterns)]
 impl fmt::Display for ErrorCode {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            _ => write!(f, "{:?}", self),
+            ErrorCode::ArgumentInvaild(element) => write!(f, "Invalid argument: {}", element),
+            _ => write!(f, "Unknown Error: {:?}", self),
         }
     }
 }
