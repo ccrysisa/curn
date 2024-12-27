@@ -1,16 +1,19 @@
-use crate::{cli::Args, config::ContainerOpts, error::ErrorCode};
-use nix::sys::utsname::uname;
+use crate::{cli::Args, config::ContainerOpts, error::ErrorCode, ipc::generate_socketpair};
+use nix::{sys::utsname::uname, unistd::close};
+use std::os::fd::RawFd;
 
 const MINIMAL_KERNEL_VERSION: f64 = 5.4; // kernel version of Ubuntu 20.04 LTS
 
 pub struct Container {
     config: ContainerOpts,
+    sockets: (RawFd, RawFd),
 }
 
 impl Container {
     pub fn new(args: Args) -> Result<Self, ErrorCode> {
-        let config = ContainerOpts::new(args.command, args.uid, args.mount_dir)?;
-        Ok(Self { config })
+        let sockets = generate_socketpair()?;
+        let config = ContainerOpts::new(args.command, args.uid, args.mount_dir, sockets.1)?;
+        Ok(Self { config, sockets })
     }
 
     pub fn create(&mut self) -> Result<(), ErrorCode> {
@@ -20,11 +23,24 @@ impl Container {
 
     pub fn clean_exit(&mut self) -> Result<(), ErrorCode> {
         log::debug!("Cleaning container");
+
+        if let Err(e) = close(self.sockets.0) {
+            log::error!("Unable to close write socket of parent: {:?}", e);
+            return Err(ErrorCode::SocketError(3));
+        }
+        if let Err(e) = close(self.sockets.1) {
+            log::error!("Unable to close read socket of child: {:?}", e);
+            return Err(ErrorCode::SocketError(4));
+        }
+
+        log::debug!("Clean finished");
         Ok(())
     }
 }
 
 fn check_linux_version() -> Result<(), ErrorCode> {
+    log::debug!("Check linux release");
+
     let host = uname().expect("Cannot get uname of host");
     let release = host.release().to_str().expect("Release must be valid");
     log::debug!("Linux release: {}", release);

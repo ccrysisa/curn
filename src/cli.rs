@@ -22,7 +22,7 @@ pub struct Args {
     pub mount_dir: PathBuf,
 }
 
-// e.g. curnc --debug --command /bin/bash -mount ../ubuntu-fs -uid 0
+// e.g. curnc --debug --command /bin/bash --mount ../ubuntu-fs --uid 0
 pub fn parse_args() -> Result<Args, ErrorCode> {
     let args = Args::from_args();
 

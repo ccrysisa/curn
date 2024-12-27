@@ -1,0 +1,1 @@
+cargo run -- --debug --command /bin/bash --mount ../ubuntu-fs --uid 0

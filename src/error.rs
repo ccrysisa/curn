@@ -5,6 +5,7 @@ pub enum ErrorCode {
     ArgumentInvaild(&'static str),
     NotSupported(u8),
     ContainerError(u8),
+    SocketError(u8),
 }
 
 impl ErrorCode {
@@ -20,13 +21,24 @@ impl fmt::Display for ErrorCode {
             ErrorCode::ArgumentInvaild(element) => write!(f, "Invalid argument: {}", element),
             ErrorCode::NotSupported(element) => {
                 let reason = match element {
-                    0 => "kernel version",
-                    1 => "machine architecture",
+                    0 => "Kernel version",
+                    1 => "Machine architecture",
                     _ => "Unknown reason",
                 };
                 write!(f, "Not supported by: {}", reason)
             }
             ErrorCode::ContainerError(_) => write!(f, "Container Error"),
+            ErrorCode::SocketError(element) => {
+                let reason = match element {
+                    0 => "Cannot generate a pair of connected sockets",
+                    1 => "Cannot send bool value through socket",
+                    2 => "Cannot receive bool value through socket",
+                    3 => "Cannot close write socket of parent",
+                    4 => "Cannot close read socket of child",
+                    _ => "Unknown reason",
+                };
+                write!(f, "Socket Error: {}", reason)
+            }
             _ => write!(f, "Unknown Error: {:?}", self),
         }
     }
