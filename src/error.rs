@@ -6,6 +6,7 @@ pub enum ErrorCode {
     NotSupported(u8),
     ContainerError(u8),
     SocketError(u8),
+    ChildProcessError(u8),
 }
 
 impl ErrorCode {
@@ -27,7 +28,14 @@ impl fmt::Display for ErrorCode {
                 };
                 write!(f, "Not supported by: {}", reason)
             }
-            ErrorCode::ContainerError(_) => write!(f, "Container Error"),
+            ErrorCode::ContainerError(element) => {
+                let reason = match element {
+                    0 => "Hardware and OS donot support container",
+                    1 => "Error while waiting for pid to finish",
+                    _ => "Unknown reason",
+                };
+                write!(f, "Container Error by: {}", reason)
+            }
             ErrorCode::SocketError(element) => {
                 let reason = match element {
                     0 => "Cannot generate a pair of connected sockets",
@@ -39,6 +47,7 @@ impl fmt::Display for ErrorCode {
                 };
                 write!(f, "Socket Error: {}", reason)
             }
+            ErrorCode::ChildProcessError(_) => write!(f, "Cloen child process failed"),
             _ => write!(f, "Unknown Error: {:?}", self),
         }
     }

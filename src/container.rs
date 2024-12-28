@@ -1,5 +1,11 @@
-use crate::{cli::Args, config::ContainerOpts, error::ErrorCode, ipc::generate_socketpair};
-use nix::{sys::utsname::uname, unistd::close};
+use crate::{
+    child::generate_child_process, cli::Args, config::ContainerOpts, error::ErrorCode,
+    ipc::generate_socketpair,
+};
+use nix::{
+    sys::{utsname::uname, wait::waitpid},
+    unistd::{close, Pid},
+};
 use std::os::fd::RawFd;
 
 const MINIMAL_KERNEL_VERSION: f64 = 5.4; // kernel version of Ubuntu 20.04 LTS
@@ -7,16 +13,24 @@ const MINIMAL_KERNEL_VERSION: f64 = 5.4; // kernel version of Ubuntu 20.04 LTS
 pub struct Container {
     config: ContainerOpts,
     sockets: (RawFd, RawFd),
+    child_pid: Option<Pid>,
 }
 
 impl Container {
     pub fn new(args: Args) -> Result<Self, ErrorCode> {
         let sockets = generate_socketpair()?;
         let config = ContainerOpts::new(args.command, args.uid, args.mount_dir, sockets.1)?;
-        Ok(Self { config, sockets })
+        Ok(Self {
+            config,
+            sockets,
+            child_pid: None,
+        })
     }
 
     pub fn create(&mut self) -> Result<(), ErrorCode> {
+        let pid = generate_child_process(&self.config)?;
+        self.child_pid = Some(pid);
+
         log::debug!("Creation finished");
         Ok(())
     }
@@ -38,8 +52,24 @@ impl Container {
     }
 }
 
+pub fn start(args: Args) -> Result<(), ErrorCode> {
+    check_linux_version()?;
+
+    let mut container = Container::new(args)?;
+
+    if let Err(e) = container.create() {
+        log::error!("Error while creating container: {:?}", e);
+        return Err(e);
+    }
+    log::debug!("Container child process PID: {:?}", container.child_pid);
+    wait_child(container.child_pid)?;
+
+    log::debug!("Execution finished, now cleaning and exit");
+    container.clean_exit()
+}
+
 fn check_linux_version() -> Result<(), ErrorCode> {
-    log::debug!("Check linux release");
+    log::debug!("Checking linux release");
 
     let host = uname().expect("Cannot get uname of host");
     let release = host.release().to_str().expect("Release must be valid");
@@ -60,16 +90,19 @@ fn check_linux_version() -> Result<(), ErrorCode> {
     Ok(())
 }
 
-pub fn start(args: Args) -> Result<(), ErrorCode> {
-    check_linux_version()?;
-
-    let mut container = Container::new(args)?;
-
-    if let Err(e) = container.create() {
-        log::error!("Error while creating container: {:?}", e);
-        return Err(e);
+fn wait_child(pid: Option<Pid>) -> Result<(), ErrorCode> {
+    match pid {
+        Some(pid) => {
+            log::debug!("Waiting for child process (pid {}) to finish", pid);
+            if let Err(e) = waitpid(pid, None) {
+                log::error!("Error while waiting for pid to finish: {:?}", e);
+                return Err(ErrorCode::ContainerError(1));
+            }
+            Ok(())
+        }
+        None => {
+            log::error!("Invalid pid of waiting process");
+            Err(ErrorCode::ContainerError(1))
+        }
     }
-
-    log::debug!("Execution finished, now cleaning and exit");
-    container.clean_exit()
 }

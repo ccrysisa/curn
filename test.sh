@@ -1,1 +1,1 @@
-cargo run -- --debug --command /bin/bash --mount ../ubuntu-fs --uid 0
+cargo build && sudo ./target/debug/cunrc --debug --command /bin/bash --mount ../ubuntu-fs --uid 0
