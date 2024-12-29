@@ -7,6 +7,8 @@ pub enum ErrorCode {
     ContainerError(u8),
     SocketError(u8),
     ChildProcessError(u8),
+    RngError,
+    HostnameError(u8),
 }
 
 impl ErrorCode {
@@ -47,6 +49,8 @@ impl fmt::Display for ErrorCode {
                 };
                 write!(f, "Socket Error: {}", reason)
             }
+            ErrorCode::RngError => write!(f, "Failed to random choose"),
+            ErrorCode::HostnameError(_) => write!(f, "Cannot set up hostname for container"),
             ErrorCode::ChildProcessError(_) => write!(f, "Cloen child process failed"),
             _ => write!(f, "Unknown Error: {:?}", self),
         }

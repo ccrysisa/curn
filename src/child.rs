@@ -1,3 +1,4 @@
+use crate::{config::ContainerOpts, error::ErrorCode, hosthname::set_container_hostname};
 use nix::{
     libc::c_int,
     sched::{clone, CloneFlags},
@@ -5,11 +6,22 @@ use nix::{
     unistd::Pid,
 };
 
-use crate::{config::ContainerOpts, error::ErrorCode};
-
 const STACK_SIZE: usize = 1024 * 1024; // 1MB stack of child process
 
+fn setup_container_configuration(config: &ContainerOpts) -> Result<(), ErrorCode> {
+    set_container_hostname(&config.hostname)?;
+    Ok(())
+}
+
 fn child(config: ContainerOpts) -> isize {
+    match setup_container_configuration(&config) {
+        Ok(_) => log::info!("Container set up successfully"),
+        Err(e) => {
+            log::error!("Error while configuring container: {:?}", e);
+            return -1;
+        }
+    }
+
     log::info!(
         "Starting container with command `{}` and args {:?}",
         config.path.to_str().expect("command must be valid"),

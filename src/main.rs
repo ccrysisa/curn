@@ -6,6 +6,7 @@ mod cli;
 mod config;
 mod container;
 mod error;
+mod hosthname;
 mod ipc;
 
 use error::exit_with_retcode;

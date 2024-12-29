@@ -1,4 +1,4 @@
-use crate::error::ErrorCode;
+use crate::{error::ErrorCode, hosthname::generate_hostname};
 use std::{ffi::CString, os::fd::RawFd, path::PathBuf};
 
 #[derive(Clone)]
@@ -8,6 +8,7 @@ pub struct ContainerOpts {
     pub uid: u32,
     pub mount_dir: PathBuf,
     pub fd: RawFd,
+    pub hostname: String,
 }
 
 impl ContainerOpts {
@@ -22,6 +23,7 @@ impl ContainerOpts {
             .map(|s| CString::new(s).expect("Cannot read argument"))
             .collect();
         let path = argv[0].clone();
+        let hostname = generate_hostname()?;
 
         Ok(Self {
             path,
@@ -29,6 +31,7 @@ impl ContainerOpts {
             uid,
             mount_dir,
             fd,
+            hostname,
         })
     }
 }
