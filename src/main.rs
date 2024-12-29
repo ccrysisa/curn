@@ -8,6 +8,7 @@ mod container;
 mod error;
 mod hosthname;
 mod ipc;
+mod mount;
 
 use error::exit_with_retcode;
 

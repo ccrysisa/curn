@@ -9,6 +9,7 @@ pub enum ErrorCode {
     ChildProcessError(u8),
     RngError,
     HostnameError(u8),
+    MountError(u8),
 }
 
 impl ErrorCode {
@@ -41,8 +42,8 @@ impl fmt::Display for ErrorCode {
             ErrorCode::SocketError(element) => {
                 let reason = match element {
                     0 => "Cannot generate a pair of connected sockets",
-                    1 => "Cannot send bool value through socket",
-                    2 => "Cannot receive bool value through socket",
+                    1 => "Cannot send value through socket",
+                    2 => "Cannot receive value through socket",
                     3 => "Cannot close write socket of parent",
                     4 => "Cannot close read socket of child",
                     _ => "Unknown reason",
@@ -52,6 +53,18 @@ impl fmt::Display for ErrorCode {
             ErrorCode::RngError => write!(f, "Failed to random choose"),
             ErrorCode::HostnameError(_) => write!(f, "Cannot set up hostname for container"),
             ErrorCode::ChildProcessError(_) => write!(f, "Cloen child process failed"),
+            ErrorCode::MountError(element) => {
+                let reason = match element {
+                    0 => "Failed to mount file system",
+                    1 => "Failed to unmount file system",
+                    2 => "Failed to create directory by given path",
+                    3 => "Failed to delete empty directory",
+                    4 => "Failed to pivot root",
+                    5 => "Failed to change working directory to root",
+                    _ => "Unknown reason",
+                };
+                write!(f, "Mount Error: {}", reason)
+            }
             _ => write!(f, "Unknown Error: {:?}", self),
         }
     }

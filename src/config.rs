@@ -1,4 +1,4 @@
-use crate::{error::ErrorCode, hosthname::generate_hostname};
+use crate::{error::ErrorCode, hosthname::generate_hostname, mount::generate_rootpath};
 use std::{ffi::CString, os::fd::RawFd, path::PathBuf};
 
 #[derive(Clone)]
@@ -9,6 +9,7 @@ pub struct ContainerOpts {
     pub mount_dir: PathBuf,
     pub fd: RawFd,
     pub hostname: String,
+    pub root_path: String,
 }
 
 impl ContainerOpts {
@@ -24,6 +25,7 @@ impl ContainerOpts {
             .collect();
         let path = argv[0].clone();
         let hostname = generate_hostname()?;
+        let root_path = generate_rootpath()?;
 
         Ok(Self {
             path,
@@ -32,6 +34,7 @@ impl ContainerOpts {
             mount_dir,
             fd,
             hostname,
+            root_path,
         })
     }
 }

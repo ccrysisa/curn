@@ -1,12 +1,16 @@
 use crate::{
-    child::generate_child_process, cli::Args, config::ContainerOpts, error::ErrorCode,
-    ipc::generate_socketpair,
+    child::generate_child_process,
+    cli::Args,
+    config::ContainerOpts,
+    error::ErrorCode,
+    ipc::{generate_socketpair, recv_str},
+    mount::clean_mounts,
 };
 use nix::{
     sys::{utsname::uname, wait::waitpid},
     unistd::{close, Pid},
 };
-use std::os::fd::RawFd;
+use std::{os::fd::RawFd, path::PathBuf};
 
 const MINIMAL_KERNEL_VERSION: f64 = 5.4; // kernel version of Ubuntu 20.04 LTS
 
@@ -46,6 +50,8 @@ impl Container {
             log::error!("Unable to close read socket of child: {:?}", e);
             return Err(ErrorCode::SocketError(4));
         }
+
+        clean_mounts(&PathBuf::from(&self.config.root_path))?;
 
         log::debug!("Clean finished");
         Ok(())

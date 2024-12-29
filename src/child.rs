@@ -1,4 +1,6 @@
-use crate::{config::ContainerOpts, error::ErrorCode, hosthname::set_container_hostname};
+use crate::{
+    config::ContainerOpts, error::ErrorCode, hosthname::set_container_hostname, mount::set_mounts,
+};
 use nix::{
     libc::c_int,
     sched::{clone, CloneFlags},
@@ -10,12 +12,15 @@ const STACK_SIZE: usize = 1024 * 1024; // 1MB stack of child process
 
 fn setup_container_configuration(config: &ContainerOpts) -> Result<(), ErrorCode> {
     set_container_hostname(&config.hostname)?;
+    set_mounts(&config.mount_dir, &config.root_path)?;
     Ok(())
 }
 
 fn child(config: ContainerOpts) -> isize {
     match setup_container_configuration(&config) {
-        Ok(_) => log::info!("Container set up successfully"),
+        Ok(_) => {
+            log::info!("Container set up successfully");
+        }
         Err(e) => {
             log::error!("Error while configuring container: {:?}", e);
             return -1;
