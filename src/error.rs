@@ -11,6 +11,7 @@ pub enum ErrorCode {
     HostnameError(u8),
     MountError(u8),
     NamespacesError(u8),
+    Capabilities(u8),
 }
 
 impl ErrorCode {
@@ -80,6 +81,7 @@ impl fmt::Display for ErrorCode {
                 };
                 write!(f, "Namespace Error: {}", reason)
             }
+            ErrorCode::Capabilities(_) => write!(f, "Failed to restrict capabilities"),
             _ => write!(f, "Unknown Error: {:?}", self),
         }
     }

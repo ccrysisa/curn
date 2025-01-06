@@ -29,7 +29,7 @@ pub fn set_user_namespace(fd: RawFd, uid: u32) -> Result<(), ErrorCode> {
         log::info!("User namespaces not supported, continuing");
     }
 
-    log::debug!("Switching to UID {} and GID {}...", uid, uid);
+    log::debug!("Switching to UID {} and GID {} ...", uid, uid);
 
     let gid = Gid::from_raw(uid);
     let uid = Uid::from_raw(uid);
@@ -75,6 +75,6 @@ pub fn handle_child_uid_gid_map(pid: Pid, fd: RawFd) -> Result<(), ErrorCode> {
         false => log::info!("No user namespace set up from child process"),
     }
 
-    log::debug!("Child UID/GID map done, sending signal to child to continue...");
+    log::debug!("Child UID/GID map done, sending signal to child to continue ...");
     send_bool(fd, false)
 }
