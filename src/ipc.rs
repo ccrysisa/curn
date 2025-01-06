@@ -34,11 +34,12 @@ pub fn recv_bool(fd: RawFd) -> Result<bool, ErrorCode> {
         log::error!("Cannot receive bool value through socket: {:?}", e);
         return Err(ErrorCode::SocketError(2));
     }
-    let value = buf[0] == 0;
+    let value = buf[0] == 1;
     log::debug!("Received a bool value `{}`", value);
     Ok(value)
 }
 
+#[allow(unused)]
 pub fn send_str(fd: RawFd, value: &str) -> Result<(), ErrorCode> {
     log::debug!("Sending string `{}`", value);
 
@@ -51,6 +52,7 @@ pub fn send_str(fd: RawFd, value: &str) -> Result<(), ErrorCode> {
     Ok(())
 }
 
+#[allow(unused)]
 pub fn recv_str(fd: RawFd) -> Result<String, ErrorCode> {
     let mut buf: [u8; 1024] = [0; 1024];
     let n = match recv(fd, &mut buf, MsgFlags::empty()) {

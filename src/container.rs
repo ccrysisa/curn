@@ -1,10 +1,6 @@
 use crate::{
-    child::generate_child_process,
-    cli::Args,
-    config::ContainerOpts,
-    error::ErrorCode,
-    ipc::{generate_socketpair, recv_str},
-    mount::clean_mounts,
+    child::generate_child_process, cli::Args, config::ContainerOpts, error::ErrorCode,
+    ipc::generate_socketpair, mount::clean_mounts, user_namespace::handle_child_uid_gid_map,
 };
 use nix::{
     sys::{utsname::uname, wait::waitpid},
@@ -34,6 +30,7 @@ impl Container {
     pub fn create(&mut self) -> Result<(), ErrorCode> {
         let pid = generate_child_process(&self.config)?;
         self.child_pid = Some(pid);
+        handle_child_uid_gid_map(pid, self.sockets.0)?;
 
         log::debug!("Creation finished");
         Ok(())

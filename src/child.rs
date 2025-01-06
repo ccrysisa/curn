@@ -1,11 +1,12 @@
 use crate::{
     config::ContainerOpts, error::ErrorCode, hosthname::set_container_hostname, mount::set_mounts,
+    user_namespace::set_user_namespace,
 };
 use nix::{
     libc::c_int,
     sched::{clone, CloneFlags},
     sys::signal::Signal,
-    unistd::Pid,
+    unistd::{close, Pid},
 };
 
 const STACK_SIZE: usize = 1024 * 1024; // 1MB stack of child process
@@ -13,6 +14,7 @@ const STACK_SIZE: usize = 1024 * 1024; // 1MB stack of child process
 fn setup_container_configuration(config: &ContainerOpts) -> Result<(), ErrorCode> {
     set_container_hostname(&config.hostname)?;
     set_mounts(&config.mount_dir, &config.root_path)?;
+    set_user_namespace(config.fd, config.uid)?;
     Ok(())
 }
 
@@ -25,6 +27,10 @@ fn child(config: ContainerOpts) -> isize {
             log::error!("Error while configuring container: {:?}", e);
             return -1;
         }
+    }
+
+    if let Err(_) = close(config.fd) {
+        log::error!("Error while closing socket...");
     }
 
     log::info!(

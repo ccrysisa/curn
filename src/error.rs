@@ -10,6 +10,7 @@ pub enum ErrorCode {
     RngError,
     HostnameError(u8),
     MountError(u8),
+    NamespacesError(u8),
 }
 
 impl ErrorCode {
@@ -64,6 +65,20 @@ impl fmt::Display for ErrorCode {
                     _ => "Unknown reason",
                 };
                 write!(f, "Mount Error: {}", reason)
+            }
+            ErrorCode::NamespacesError(element) => {
+                let reason = match element {
+                    0 => "Failed to map UID and GID",
+                    1 => "Failed to set groups",
+                    2 => "Failed to set GID",
+                    3 => "Failed to set UID",
+                    4 => "Failed to write uid_map file",
+                    5 => "Failed to create uid_map file",
+                    6 => "Failed to write gid_map file",
+                    7 => "Failed to create gid_map file",
+                    _ => "Unknown reason",
+                };
+                write!(f, "Namespace Error: {}", reason)
             }
             _ => write!(f, "Unknown Error: {:?}", self),
         }
