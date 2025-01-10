@@ -35,6 +35,6 @@ pub fn set_capabilities() -> Result<(), ErrorCode> {
             .drop_all(CAPABILITIES_DROP.iter().map(|&cap| cap));
         Ok(())
     } else {
-        Err(ErrorCode::Capabilities(0))
+        Err(ErrorCode::CapabilitiesError(0))
     }
 }

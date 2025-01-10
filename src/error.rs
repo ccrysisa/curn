@@ -11,7 +11,8 @@ pub enum ErrorCode {
     HostnameError(u8),
     MountError(u8),
     NamespacesError(u8),
-    Capabilities(u8),
+    CapabilitiesError(u8),
+    SyscallError(u8),
 }
 
 impl ErrorCode {
@@ -81,7 +82,17 @@ impl fmt::Display for ErrorCode {
                 };
                 write!(f, "Namespace Error: {}", reason)
             }
-            ErrorCode::Capabilities(_) => write!(f, "Failed to restrict capabilities"),
+            ErrorCode::CapabilitiesError(_) => write!(f, "Failed to restrict capabilities"),
+            ErrorCode::SyscallError(element) => {
+                let reason = match element {
+                    0 => "Failed to load seccomp policy",
+                    1 => "Failed to create seccomp context",
+                    2 => "Failed to set action for syscall",
+                    3 => "Failed to set rule for syscall",
+                    _ => "Unknown reason",
+                };
+                write!(f, "Syscall Error: {}", reason)
+            }
             _ => write!(f, "Unknown Error: {:?}", self),
         }
     }

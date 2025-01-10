@@ -1,6 +1,7 @@
 use crate::{
     capabilities::set_capabilities, config::ContainerOpts, error::ErrorCode,
-    hosthname::set_container_hostname, mount::set_mounts, user_namespace::set_user_namespace,
+    hosthname::set_container_hostname, mount::set_mounts, syscall::set_syscalls,
+    user_namespace::set_user_namespace,
 };
 use nix::{
     libc::c_int,
@@ -16,6 +17,7 @@ fn setup_container_configuration(config: &ContainerOpts) -> Result<(), ErrorCode
     set_mounts(&config.mount_dir, &config.root_path)?;
     set_user_namespace(config.fd, config.uid)?;
     set_capabilities()?;
+    set_syscalls()?;
 
     Ok(())
 }
