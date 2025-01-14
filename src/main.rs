@@ -2,6 +2,7 @@
 extern crate scan_fmt;
 
 mod capabilities;
+mod cgroup;
 mod child;
 mod cli;
 mod config;

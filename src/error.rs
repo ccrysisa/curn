@@ -13,6 +13,7 @@ pub enum ErrorCode {
     NamespacesError(u8),
     CapabilitiesError(u8),
     SyscallError(u8),
+    CgroupError(u8),
 }
 
 impl ErrorCode {
@@ -92,6 +93,17 @@ impl fmt::Display for ErrorCode {
                     _ => "Unknown reason",
                 };
                 write!(f, "Syscall Error: {}", reason)
+            }
+            ErrorCode::CgroupError(element) => {
+                let reason = match element {
+                    0 => "Failed to build a control group",
+                    1 => "Failed to attach task to control group",
+                    2 => "Failed to set resource limits",
+                    3 => "Failed to remove directory",
+                    4 => "Failed to canonicalize path",
+                    _ => "Unknown reason",
+                };
+                write!(f, "Cgroup Error: {}", reason)
             }
             _ => write!(f, "Unknown Error: {:?}", self),
         }

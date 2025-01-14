@@ -1,6 +1,12 @@
 use crate::{
-    child::generate_child_process, cli::Args, config::ContainerOpts, error::ErrorCode,
-    ipc::generate_socketpair, mount::clean_mounts, user_namespace::handle_child_uid_gid_map,
+    cgroup::{clean_cgroups, restrict_resources},
+    child::generate_child_process,
+    cli::Args,
+    config::ContainerOpts,
+    error::ErrorCode,
+    ipc::generate_socketpair,
+    mount::clean_mounts,
+    user_namespace::handle_child_uid_gid_map,
 };
 use nix::{
     sys::{utsname::uname, wait::waitpid},
@@ -29,8 +35,9 @@ impl Container {
 
     pub fn create(&mut self) -> Result<(), ErrorCode> {
         let pid = generate_child_process(&self.config)?;
-        self.child_pid = Some(pid);
+        restrict_resources(&self.config.hostname, pid)?;
         handle_child_uid_gid_map(pid, self.sockets.0)?;
+        self.child_pid = Some(pid);
 
         log::debug!("Creation finished");
         Ok(())
@@ -47,8 +54,8 @@ impl Container {
             log::error!("Unable to close read socket of child: {:?}", e);
             return Err(ErrorCode::SocketError(4));
         }
-
         clean_mounts(&PathBuf::from(&self.config.root_path))?;
+        clean_cgroups(&self.config.hostname)?;
 
         log::debug!("Clean finished");
         Ok(())
