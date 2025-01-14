@@ -47,7 +47,7 @@ pub fn restrict_resources(hostname: &String, pid: Pid) -> Result<(), ErrorCode> 
 }
 
 pub fn clean_cgroups(hostname: &String) -> Result<(), ErrorCode> {
-    log::debug!("Cleaning cgruops");
+    log::debug!("Cleaning cgruops: /sys/fs/cgroup/{}/", hostname);
 
     match canonicalize(format!("/sys/fs/cgroup/{}/", hostname)) {
         Ok(d) => match remove_dir(d) {

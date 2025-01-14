@@ -63,9 +63,12 @@ pub fn set_mounts(mount_dir: &PathBuf, root_path: &String) -> Result<(), ErrorCo
     Ok(())
 }
 
-pub fn clean_mounts(path: &PathBuf) -> Result<(), ErrorCode> {
-    log::debug!("Cleaning mount points ...");
-    delete_directory(path)?;
+pub fn clean_mounts(path: &String) -> Result<(), ErrorCode> {
+    log::debug!("Cleaning mount points: {}", path);
+
+    let path = PathBuf::from(&path);
+    delete_directory(&path)?;
+
     Ok(())
 }
 

@@ -34,6 +34,9 @@ pub fn parse_args() -> Result<Args, ErrorCode> {
     }
 
     // validate arguments
+    if args.command.is_empty() {
+        return Err(ErrorCode::ArgumentInvaild("command"));
+    }
     if !args.mount_dir.exists() || !args.mount_dir.is_dir() {
         return Err(ErrorCode::ArgumentInvaild("mount"));
     }

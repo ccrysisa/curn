@@ -12,7 +12,7 @@ use nix::{
     sys::{utsname::uname, wait::waitpid},
     unistd::{close, Pid},
 };
-use std::{os::fd::RawFd, path::PathBuf};
+use std::os::fd::RawFd;
 
 const MINIMAL_KERNEL_VERSION: f64 = 5.4; // kernel version of Ubuntu 20.04 LTS
 
@@ -54,7 +54,7 @@ impl Container {
             log::error!("Unable to close read socket of child: {:?}", e);
             return Err(ErrorCode::SocketError(4));
         }
-        clean_mounts(&PathBuf::from(&self.config.root_path))?;
+        clean_mounts(&self.config.root_path)?;
         clean_cgroups(&self.config.hostname)?;
 
         log::debug!("Clean finished");

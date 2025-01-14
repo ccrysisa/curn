@@ -1,3 +1,5 @@
+use std::ffi::CString;
+
 use crate::{
     capabilities::set_capabilities, config::ContainerOpts, error::ErrorCode,
     hosthname::set_container_hostname, mount::set_mounts, syscall::set_syscalls,
@@ -7,7 +9,7 @@ use nix::{
     libc::c_int,
     sched::{clone, CloneFlags},
     sys::signal::Signal,
-    unistd::{close, Pid},
+    unistd::{close, execve, Pid},
 };
 
 const STACK_SIZE: usize = 1024 * 1024; // 1MB stack of child process
@@ -42,7 +44,14 @@ fn child(config: ContainerOpts) -> isize {
         config.path.to_str().expect("command must be valid"),
         config.argv
     );
-    0
+
+    match execve::<CString, CString>(&config.path, &config.argv, &[]) {
+        Ok(_) => 0,
+        Err(e) => {
+            log::error!("Error while trying to perfoem execve: {:?}", e);
+            -1
+        }
+    }
 }
 
 pub fn generate_child_process(config: &ContainerOpts) -> Result<Pid, ErrorCode> {

@@ -55,8 +55,8 @@ impl fmt::Display for ErrorCode {
                 write!(f, "Socket Error: {}", reason)
             }
             ErrorCode::RngError => write!(f, "Failed to random choose"),
-            ErrorCode::HostnameError(_) => write!(f, "Cannot set up hostname for container"),
-            ErrorCode::ChildProcessError(_) => write!(f, "Cloen child process failed"),
+            ErrorCode::HostnameError(_element) => write!(f, "Cannot set up hostname for container"),
+            ErrorCode::ChildProcessError(_element) => write!(f, "Clone child process failed"),
             ErrorCode::MountError(element) => {
                 let reason = match element {
                     0 => "Failed to mount file system",
@@ -83,7 +83,7 @@ impl fmt::Display for ErrorCode {
                 };
                 write!(f, "Namespace Error: {}", reason)
             }
-            ErrorCode::CapabilitiesError(_) => write!(f, "Failed to restrict capabilities"),
+            ErrorCode::CapabilitiesError(_element) => write!(f, "Failed to restrict capabilities"),
             ErrorCode::SyscallError(element) => {
                 let reason = match element {
                     0 => "Failed to load seccomp policy",
