@@ -21,6 +21,7 @@ pub fn set_mounts(mount_dir: &PathBuf, root_path: &String) -> Result<(), ErrorCo
     mount_directory(
         None,
         &PathBuf::from("/"),
+        None,
         vec![MsFlags::MS_REC, MsFlags::MS_PRIVATE],
     )?;
 
@@ -35,6 +36,7 @@ pub fn set_mounts(mount_dir: &PathBuf, root_path: &String) -> Result<(), ErrorCo
     mount_directory(
         Some(&mount_dir),
         &new_root,
+        None,
         vec![MsFlags::MS_BIND, MsFlags::MS_PRIVATE],
     )?;
 
@@ -60,6 +62,14 @@ pub fn set_mounts(mount_dir: &PathBuf, root_path: &String) -> Result<(), ErrorCo
     unmount_directory(&old_root)?;
     delete_directory(&old_root)?;
 
+    // mount proc filesystem of container
+    mount_directory(
+        Some(&PathBuf::from("proc")),
+        &PathBuf::from("/proc"),
+        Some(&PathBuf::from("proc")),
+        vec![],
+    )?;
+
     Ok(())
 }
 
@@ -75,6 +85,7 @@ pub fn clean_mounts(path: &String) -> Result<(), ErrorCode> {
 fn mount_directory(
     path: Option<&PathBuf>,
     mount_point: &PathBuf,
+    fstype: Option<&PathBuf>,
     flags: Vec<MsFlags>,
 ) -> Result<(), ErrorCode> {
     let mut ms_flags = MsFlags::empty();
@@ -82,7 +93,7 @@ fn mount_directory(
         ms_flags.insert(f);
     }
 
-    match mount::<_, _, PathBuf, PathBuf>(path, mount_point, None, ms_flags, None) {
+    match mount::<_, _, PathBuf, PathBuf>(path, mount_point, fstype, ms_flags, None) {
         Ok(_) => Ok(()),
         Err(e) => {
             if let Some(p) = path {

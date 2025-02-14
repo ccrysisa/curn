@@ -2,7 +2,7 @@ use std::ffi::CString;
 
 use crate::{
     capabilities::set_capabilities, config::ContainerOpts, error::ErrorCode,
-    hosthname::set_container_hostname, mount::set_mounts, syscall::set_syscalls,
+    hosthname::set_container_hostname, mount::set_mounts, syscall::set_syscalls, tools::set_tools,
     user_namespace::set_user_namespace,
 };
 use nix::{
@@ -20,6 +20,7 @@ fn setup_container_configuration(config: &ContainerOpts) -> Result<(), ErrorCode
     set_user_namespace(config.fd, config.uid)?;
     set_capabilities()?;
     set_syscalls()?;
+    set_tools()?;
 
     Ok(())
 }
@@ -45,7 +46,8 @@ fn child(config: ContainerOpts) -> isize {
         config.argv
     );
 
-    match execve::<CString, CString>(&config.path, &config.argv, &[]) {
+    let environments = [CString::new("TERM=xterm").expect("Must be valid")];
+    match execve::<CString, CString>(&config.path, &config.argv, &environments) {
         Ok(_) => 0,
         Err(e) => {
             log::error!("Error while trying to perfoem execve: {:?}", e);
