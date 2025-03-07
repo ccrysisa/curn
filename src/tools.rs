@@ -1,7 +1,7 @@
 use crate::error::ErrorCode;
 use which::which;
 
-const TOOLS_LIST: [&'static str; 2] = ["vim", "gdb"];
+const TOOLS_LIST: [&'static str; 1] = ["sqlbrowser"];
 
 fn check_tools() -> Result<(), ErrorCode> {
     for tool in TOOLS_LIST {

@@ -46,7 +46,10 @@ fn child(config: ContainerOpts) -> isize {
         config.argv
     );
 
-    let environments = [CString::new("TERM=xterm").expect("Must be valid")];
+    let environments = vec!["TERM=xterm"]
+        .iter()
+        .map(|&x| CString::new(x).expect("Must be valid"))
+        .collect::<Vec<_>>();
     match execve::<CString, CString>(&config.path, &config.argv, &environments) {
         Ok(_) => 0,
         Err(e) => {

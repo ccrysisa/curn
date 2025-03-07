@@ -5,15 +5,15 @@ use nix::{
 };
 use rand::Rng;
 use std::{
-    fs::{create_dir_all, remove_dir},
+    fs::{self, create_dir_all, remove_dir},
     path::PathBuf,
 };
 
+/// Return mounted path, e.g. /tmp/cunrc.xxx...
 pub fn generate_rootpath() -> Result<String, ErrorCode> {
     Ok(format!("/tmp/cunrc.{}", random_string(12)))
 }
 
-/// Return mounted path, e.g. /tmp/cunrc.xxx...
 pub fn set_mounts(mount_dir: &PathBuf, root_path: &String) -> Result<(), ErrorCode> {
     log::debug!("Setting mount points ...");
 
@@ -36,6 +36,48 @@ pub fn set_mounts(mount_dir: &PathBuf, root_path: &String) -> Result<(), ErrorCo
     mount_directory(
         Some(&mount_dir),
         &new_root,
+        None,
+        vec![MsFlags::MS_BIND, MsFlags::MS_PRIVATE],
+    )?;
+
+    // mount fuse to support appimage
+    let fuse_device_path = new_root.join("dev/fuse");
+    if !fuse_device_path.exists() {
+        fs::File::create(&fuse_device_path).map_err(|_| ErrorCode::MountError(2))?;
+    }
+
+    mount_directory(
+        Some(&PathBuf::from("/dev/fuse")),
+        &fuse_device_path,
+        Some(&PathBuf::from("fuse")),
+        vec![MsFlags::MS_BIND],
+    )?;
+
+    let libfuse_path = new_root.join("usr/lib/x86_64-linux-gnu/libfuse.so.2");
+    if !libfuse_path.exists() {
+        fs::File::create(&libfuse_path).map_err(|_| ErrorCode::MountError(2))?;
+    }
+    fs::copy("/usr/lib/x86_64-linux-gnu/libfuse.so.2.9.9", &libfuse_path)
+        .map_err(|_| ErrorCode::MountError(2))?;
+
+    let fusermount_path = new_root.join("usr/bin/fusermount");
+    if !fuse_device_path.exists() {
+        fs::File::create(&fusermount_path).map_err(|_| ErrorCode::MountError(2))?;
+    }
+    fs::copy("../appimages-fs/fusermount", &fusermount_path)
+        .map_err(|_| ErrorCode::MountError(2))?;
+
+    // let libc_path = new_root.join("usr/lib/x86_64-linux-gnu/libc.so.6");
+    // fs::copy("/usr/lib/x86_64-linux-gnu/libc.so.6", &libc_path)
+    //     .map_err(|_| ErrorCode::MountError(2))?;
+
+    // mount tools (appimages) to continer
+    let tool_mountpoint = new_root.join("tool");
+    let tools_dir = PathBuf::from("../appimages-fs");
+    create_directory(&tool_mountpoint)?;
+    mount_directory(
+        Some(&tools_dir),
+        &tool_mountpoint,
         None,
         vec![MsFlags::MS_BIND, MsFlags::MS_PRIVATE],
     )?;

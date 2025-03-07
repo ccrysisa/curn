@@ -61,7 +61,7 @@ impl fmt::Display for ErrorCode {
                 let reason = match element {
                     0 => "Failed to mount file system",
                     1 => "Failed to unmount file system",
-                    2 => "Failed to create directory by given path",
+                    2 => "Failed to create directory or file by given path",
                     3 => "Failed to delete empty directory",
                     4 => "Failed to pivot root",
                     5 => "Failed to change working directory to root",

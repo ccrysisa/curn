@@ -1,5 +1,10 @@
 use crate::error::ErrorCode;
-use cgroups_rs::{cgroup_builder::CgroupBuilder, hierarchies::V2, CgroupPid, MaxValue};
+use cgroups_rs::{
+    cgroup_builder::CgroupBuilder,
+    devices::{DevicePermissions, DeviceType},
+    hierarchies::V2,
+    CgroupPid, MaxValue,
+};
 use nix::unistd::Pid;
 use rlimit::{setrlimit, Resource};
 use std::fs::{canonicalize, remove_dir};
@@ -26,6 +31,19 @@ pub fn restrict_resources(hostname: &String, pid: Pid) -> Result<(), ErrorCode> 
         .blkio()
         .weight(50)
         .done()
+        // .devices()
+        // .device(
+        //     10,
+        //     229,
+        //     DeviceType::Char,
+        //     true,
+        //     vec![
+        //         DevicePermissions::Read,
+        //         DevicePermissions::Write,
+        //         DevicePermissions::MkNod,
+        //     ],
+        // )
+        // .done()
         .build(Box::new(V2::new()))
         .map_err(|_| ErrorCode::CgroupError(0))?;
 
