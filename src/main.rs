@@ -7,6 +7,7 @@ mod child;
 mod cli;
 mod config;
 mod container;
+mod ebpf;
 mod error;
 mod hosthname;
 mod ipc;

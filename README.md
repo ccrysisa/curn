@@ -1,6 +1,6 @@
-# cunrc
+# curn
 
-cunrc is a container written in Rust, and it is inspired by [curn](https://github.com/ccrysisa/curn).
+cunrc is a container written in Rust.
 
 ## Quick Start
 

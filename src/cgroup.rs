@@ -1,10 +1,5 @@
 use crate::error::ErrorCode;
-use cgroups_rs::{
-    cgroup_builder::CgroupBuilder,
-    devices::{DevicePermissions, DeviceType},
-    hierarchies::V2,
-    CgroupPid, MaxValue,
-};
+use cgroups_rs::{cgroup_builder::CgroupBuilder, hierarchies::V2, CgroupPid, MaxValue};
 use nix::unistd::Pid;
 use rlimit::{setrlimit, Resource};
 use std::fs::{canonicalize, remove_dir};

@@ -16,6 +16,7 @@ const CAPABILITIES_DROP: [Cap; 21] = [
     Cap::SETFCAP,
     Cap::SYSLOG,
     Cap::SYS_ADMIN,
+    // https://github.com/moby/moby/issues/9448
     Cap::SYS_BOOT,
     Cap::SYS_MODULE,
     Cap::SYS_NICE,
