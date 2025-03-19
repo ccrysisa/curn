@@ -5,7 +5,7 @@ use nix::{
 };
 use rand::Rng;
 use std::{
-    fs::{self, create_dir_all, remove_dir},
+    fs::{create_dir_all, remove_dir},
     path::PathBuf,
 };
 
@@ -39,44 +39,6 @@ pub fn set_mounts(mount_dir: &PathBuf, root_path: &String) -> Result<(), ErrorCo
         None,
         vec![MsFlags::MS_BIND, MsFlags::MS_PRIVATE],
     )?;
-
-    // // mount fuse to support appimage
-    // let fuse_device_path = new_root.join("dev/fuse");
-    // if !fuse_device_path.exists() {
-    //     fs::File::create(&fuse_device_path).map_err(|_| ErrorCode::MountError(2))?;
-    // }
-
-    // mount_directory(
-    //     Some(&PathBuf::from("/dev/fuse")),
-    //     &fuse_device_path,
-    //     Some(&PathBuf::from("fuse")),
-    //     vec![MsFlags::MS_BIND],
-    // )?;
-
-    // let libfuse_path = new_root.join("usr/lib/x86_64-linux-gnu/libfuse.so.2");
-    // if !libfuse_path.exists() {
-    //     fs::File::create(&libfuse_path).map_err(|_| ErrorCode::MountError(2))?;
-    // }
-    // fs::copy("/usr/lib/x86_64-linux-gnu/libfuse.so.2.9.9", &libfuse_path)
-    //     .map_err(|_| ErrorCode::MountError(2))?;
-
-    // let fusermount_path = new_root.join("usr/bin/fusermount");
-    // if !fuse_device_path.exists() {
-    //     fs::File::create(&fusermount_path).map_err(|_| ErrorCode::MountError(2))?;
-    // }
-    // fs::copy("../appimages-fs/fusermount", &fusermount_path)
-    //     .map_err(|_| ErrorCode::MountError(2))?;
-
-    // // mount tools (appimages) to continer
-    // let tool_mountpoint = new_root.join("tmp/tool");
-    // let tools_dir = PathBuf::from("../appimages-fs");
-    // create_directory(&tool_mountpoint)?;
-    // mount_directory(
-    //     Some(&tools_dir),
-    //     &tool_mountpoint,
-    //     None,
-    //     vec![MsFlags::MS_BIND, MsFlags::MS_PRIVATE],
-    // )?;
 
     // pivot and change working path to the new root
     log::debug!("Pivoting root");

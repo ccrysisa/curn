@@ -1,0 +1,1 @@
+cargo build --release && sudo ./target/release/curn --debug --command /bin/bash --mount ../ubuntu-fs --uid 0
