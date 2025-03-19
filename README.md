@@ -2,7 +2,7 @@
 
 cunrc is a container written in Rust.
 
-## Quick Start
+## Prerequisites
 
 Make sure you have installed docker:
 
@@ -12,5 +12,10 @@ $ docker export ubuntu-fs -o ubuntu-fs.tar
 $ docker stop ubuntu-fs
 $ mkdir -p ./ubuntu-fs
 $ tar xf ubuntu-fs.tar -C ./ubuntu-fs/
-$ ./test.sh
+```
+
+## Quick Start
+
+```sh
+$ ./run.sh
 ```
