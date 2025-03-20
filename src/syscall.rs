@@ -46,7 +46,7 @@ pub fn set_syscalls() -> Result<(), ErrorCode> {
         }
 
         if let Err(_) = ctx.load() {
-            return Err(ErrorCode::SocketError(0));
+            return Err(ErrorCode::SyscallError(0));
         }
         Ok(())
     } else {
@@ -73,6 +73,6 @@ fn refuse_syscall_ifcomp(
         &[Comparator::new(index, Cmp::MaskedEq, biteq, Some(biteq))],
     ) {
         Ok(_) => Ok(()),
-        Err(_) => Err(ErrorCode::SocketError(3)),
+        Err(_) => Err(ErrorCode::SyscallError(3)),
     }
 }
