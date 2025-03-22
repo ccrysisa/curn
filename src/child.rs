@@ -16,7 +16,7 @@ const STACK_SIZE: usize = 1024 * 1024; // 1MB stack of child process
 
 fn setup_container_configuration(config: &ContainerOpts) -> Result<(), ErrorCode> {
     set_container_hostname(&config.hostname)?;
-    set_mounts(&config.mount_dir, &config.root_path)?;
+    set_mounts(&config.mount_dir, &config.root_path, &config.add_paths)?;
     set_user_namespace(config.fd, config.uid)?;
     set_capabilities()?;
     set_syscalls()?;

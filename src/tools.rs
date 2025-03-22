@@ -18,6 +18,7 @@ fn check_tools() -> Result<(), ErrorCode> {
 }
 
 pub fn set_tools() -> Result<(), ErrorCode> {
-    check_tools()
+    // check_tools()
     // todo!()
+    Ok(())
 }

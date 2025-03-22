@@ -14,10 +14,14 @@ pub fn generate_rootpath() -> Result<String, ErrorCode> {
     Ok(format!("/tmp/cunrc.{}", random_string(12)))
 }
 
-pub fn set_mounts(mount_dir: &PathBuf, root_path: &String) -> Result<(), ErrorCode> {
+pub fn set_mounts(
+    mount_dir: &PathBuf,
+    root_path: &String,
+    add_paths: &Vec<(PathBuf, PathBuf)>,
+) -> Result<(), ErrorCode> {
     log::debug!("Setting mount points ...");
 
-    // remount root `/` by provate mount namespace
+    // remount root `/` by private mount namespace
     mount_directory(
         None,
         &PathBuf::from("/"),
@@ -39,6 +43,25 @@ pub fn set_mounts(mount_dir: &PathBuf, root_path: &String) -> Result<(), ErrorCo
         None,
         vec![MsFlags::MS_BIND, MsFlags::MS_PRIVATE],
     )?;
+
+    // mount additional volumes
+    log::debug!("Mounting additional volumes");
+    for (from_path, mnt_path) in add_paths.iter() {
+        log::debug!(
+            "Mount host's {} to container's /{}",
+            from_path.to_str().unwrap(),
+            mnt_path.to_str().unwrap()
+        );
+
+        let mnt_path = new_root.join(mnt_path);
+        create_directory(&mnt_path)?;
+        mount_directory(
+            Some(from_path),
+            &mnt_path,
+            None,
+            vec![MsFlags::MS_PRIVATE, MsFlags::MS_BIND],
+        )?;
+    }
 
     // pivot and change working path to the new root
     log::debug!("Pivoting root");
@@ -76,8 +99,8 @@ pub fn set_mounts(mount_dir: &PathBuf, root_path: &String) -> Result<(), ErrorCo
 pub fn clean_mounts(path: &String) -> Result<(), ErrorCode> {
     log::debug!("Cleaning mount points: {}", path);
 
-    let path = PathBuf::from(&path);
-    delete_directory(&path)?;
+    let root_mnt_point = PathBuf::from(&path);
+    delete_directory(&root_mnt_point)?;
 
     Ok(())
 }

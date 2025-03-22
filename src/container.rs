@@ -12,7 +12,7 @@ use nix::{
     sys::{utsname::uname, wait::waitpid},
     unistd::{close, Pid},
 };
-use std::os::fd::RawFd;
+use std::{os::fd::RawFd, path::PathBuf};
 
 const MINIMAL_KERNEL_VERSION: f64 = 5.4; // kernel version of Ubuntu 20.04 LTS
 
@@ -24,8 +24,25 @@ pub struct Container {
 
 impl Container {
     pub fn new(args: Args) -> Result<Self, ErrorCode> {
+        let mut add_paths = Vec::new();
+        for x in args.add_paths.iter() {
+            let pair = x.to_str().unwrap().split(":").collect::<Vec<_>>();
+            let from_path = PathBuf::from(pair[0])
+                .canonicalize()
+                .expect("Cannot canonicalize path");
+            let mnt_path = PathBuf::from(
+                pair[1]
+                    .to_string()
+                    .strip_prefix("/")
+                    .expect("Cannot canonicalize path"),
+            );
+            add_paths.push((from_path, mnt_path));
+        }
+
         let sockets = generate_socketpair()?;
-        let config = ContainerOpts::new(args.command, args.uid, args.mount_dir, sockets.1)?;
+        let config =
+            ContainerOpts::new(args.command, args.uid, args.mount_dir, sockets.1, add_paths)?;
+
         Ok(Self {
             config,
             sockets,

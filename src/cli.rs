@@ -20,6 +20,10 @@ pub struct Args {
     /// Directory to mount as root of the container
     #[structopt(parse(from_os_str), short = "m", long = "mount")]
     pub mount_dir: PathBuf,
+
+    /// Mount a directory inside the container
+    #[structopt(parse(from_os_str), short = "a", long = "add")]
+    pub add_paths: Vec<PathBuf>,
 }
 
 // e.g. curnc --debug --command /bin/bash --mount ../ubuntu-fs --uid 0
