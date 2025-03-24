@@ -11,6 +11,7 @@ pub struct ContainerOpts {
     pub hostname: String,
     pub root_path: String,
     pub add_paths: Vec<(PathBuf, PathBuf)>,
+    pub tool_dir: Option<PathBuf>,
 }
 
 impl ContainerOpts {
@@ -20,6 +21,7 @@ impl ContainerOpts {
         mount_dir: PathBuf,
         fd: RawFd,
         add_paths: Vec<(PathBuf, PathBuf)>,
+        tool_dir: Option<PathBuf>,
     ) -> Result<Self, ErrorCode> {
         let argv: Vec<CString> = command
             .split_ascii_whitespace()
@@ -38,6 +40,7 @@ impl ContainerOpts {
             hostname,
             root_path,
             add_paths,
+            tool_dir,
         })
     }
 }

@@ -18,6 +18,7 @@ pub fn set_mounts(
     mount_dir: &PathBuf,
     root_path: &String,
     add_paths: &Vec<(PathBuf, PathBuf)>,
+    tool_dir: Option<&PathBuf>,
 ) -> Result<(), ErrorCode> {
     log::debug!("Setting mount points ...");
 
@@ -60,6 +61,18 @@ pub fn set_mounts(
             &mnt_path,
             None,
             vec![MsFlags::MS_PRIVATE, MsFlags::MS_BIND],
+        )?;
+    }
+
+    if let Some(tool_dir) = tool_dir {
+        // mount tool volume
+        let tool_mnt_point = new_root.join("curn");
+        create_directory(&tool_mnt_point)?;
+        mount_directory(
+            Some(&tool_dir),
+            &tool_mnt_point,
+            None,
+            vec![MsFlags::MS_BIND, MsFlags::MS_PRIVATE],
         )?;
     }
 

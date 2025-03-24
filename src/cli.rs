@@ -21,9 +21,13 @@ pub struct Args {
     #[structopt(parse(from_os_str), short = "m", long = "mount")]
     pub mount_dir: PathBuf,
 
-    /// Mount a directory inside the container
+    /// Mount additional directories inside the container
     #[structopt(parse(from_os_str), short = "a", long = "add")]
     pub add_paths: Vec<PathBuf>,
+
+    /// Mount the tool directory inside the container
+    #[structopt(parse(from_os_str), short = "t", long = "tool")]
+    pub tool_dir: Option<PathBuf>,
 }
 
 // e.g. curnc --debug --command /bin/bash --mount ../ubuntu-fs --uid 0

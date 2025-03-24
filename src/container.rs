@@ -40,8 +40,14 @@ impl Container {
         }
 
         let sockets = generate_socketpair()?;
-        let config =
-            ContainerOpts::new(args.command, args.uid, args.mount_dir, sockets.1, add_paths)?;
+        let config = ContainerOpts::new(
+            args.command,
+            args.uid,
+            args.mount_dir,
+            sockets.1,
+            add_paths,
+            args.tool_dir,
+        )?;
 
         Ok(Self {
             config,

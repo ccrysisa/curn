@@ -13,7 +13,6 @@ mod hosthname;
 mod ipc;
 mod mount;
 mod syscall;
-mod tools;
 mod user_namespace;
 
 use error::exit_with_retcode;

@@ -2,7 +2,7 @@ use std::ffi::CString;
 
 use crate::{
     capabilities::set_capabilities, config::ContainerOpts, error::ErrorCode,
-    hosthname::set_container_hostname, mount::set_mounts, syscall::set_syscalls, tools::set_tools,
+    hosthname::set_container_hostname, mount::set_mounts, syscall::set_syscalls,
     user_namespace::set_user_namespace,
 };
 use nix::{
@@ -16,11 +16,15 @@ const STACK_SIZE: usize = 1024 * 1024; // 1MB stack of child process
 
 fn setup_container_configuration(config: &ContainerOpts) -> Result<(), ErrorCode> {
     set_container_hostname(&config.hostname)?;
-    set_mounts(&config.mount_dir, &config.root_path, &config.add_paths)?;
+    set_mounts(
+        &config.mount_dir,
+        &config.root_path,
+        &config.add_paths,
+        config.tool_dir.as_ref(),
+    )?;
     set_user_namespace(config.fd, config.uid)?;
     set_capabilities()?;
     set_syscalls()?;
-    set_tools()?;
 
     Ok(())
 }
