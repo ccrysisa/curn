@@ -3,6 +3,7 @@ use crate::{
     child::generate_child_process,
     cli::Args,
     config::ContainerOpts,
+    ebpf::{clean_ebpf_program, generate_ebpf_program},
     error::ErrorCode,
     ipc::generate_socketpair,
     mount::clean_mounts,
@@ -20,6 +21,7 @@ pub struct Container {
     config: ContainerOpts,
     sockets: (RawFd, RawFd),
     child_pid: Option<Pid>,
+    ebpf_pid: Option<Pid>,
 }
 
 impl Container {
@@ -53,14 +55,17 @@ impl Container {
             config,
             sockets,
             child_pid: None,
+            ebpf_pid: None,
         })
     }
 
     pub fn create(&mut self) -> Result<(), ErrorCode> {
+        let ebpf_pid = generate_ebpf_program()?;
         let pid = generate_child_process(&self.config)?;
         restrict_resources(&self.config.hostname, pid)?;
         handle_child_uid_gid_map(pid, self.sockets.0)?;
         self.child_pid = Some(pid);
+        self.ebpf_pid = Some(ebpf_pid);
 
         log::debug!("Creation finished");
         Ok(())
@@ -79,6 +84,7 @@ impl Container {
         }
         clean_mounts(&self.config.root_path)?;
         clean_cgroups(&self.config.hostname)?;
+        clean_ebpf_program(self.ebpf_pid.expect("eBPF program pid must be valid"))?;
 
         log::debug!("Clean finished");
         Ok(())

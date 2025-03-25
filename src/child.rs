@@ -9,7 +9,7 @@ use nix::{
     libc::c_int,
     sched::{clone, CloneFlags},
     sys::signal::Signal,
-    unistd::{close, execve, Pid},
+    unistd::{close, execve, sleep, Pid},
 };
 
 const STACK_SIZE: usize = 1024 * 1024; // 1MB stack of child process
@@ -54,6 +54,8 @@ fn child(config: ContainerOpts) -> isize {
         .iter()
         .map(|&x| CString::new(x).expect("Must be valid"))
         .collect::<Vec<_>>();
+
+    sleep(1); // sleep 1s to make eBPF program to run first
     match execve::<CString, CString>(&config.path, &config.argv, &environments) {
         Ok(_) => 0,
         Err(e) => {

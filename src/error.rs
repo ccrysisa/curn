@@ -39,6 +39,7 @@ impl fmt::Display for ErrorCode {
                 let reason = match element {
                     0 => "Hardware and OS donot support container",
                     1 => "Error while waiting for pid to finish",
+                    2 => "Error while killing a process",
                     _ => "Unknown reason",
                 };
                 write!(f, "Container Error by: {}", reason)

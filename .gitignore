@@ -3,3 +3,5 @@
 /ubuntu-fs
 *.o
 *.json
+ecc
+ecli
