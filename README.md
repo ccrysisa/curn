@@ -17,5 +17,6 @@ $ tar xf ubuntu-fs.tar -C ./ubuntu-fs/
 ## Quick Start
 
 ```sh
+$ make
 $ ./run.sh
 ```
