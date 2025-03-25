@@ -7,7 +7,7 @@ debug:
 	cargo build
 
 clean:
-	cargo clean
-	rm -rf *.bpf.o *.json
+	@cargo clean
+	@rm -rf *.bpf.o *.json
 
 .PHONY: all debug clean
