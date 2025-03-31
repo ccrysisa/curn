@@ -1,10 +1,11 @@
-all:
-	./ecc bashreadline.bpf.c
+all: package.json
 	cargo build --release
 
-debug:
-	./ecc bashreadline.bpf.c
+debug: package.json
 	cargo build
+
+package.json: ecc
+	./ecc snoop.bpf.c snoop.bpf.h
 
 clean:
 	@cargo clean

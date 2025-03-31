@@ -60,8 +60,8 @@ impl Container {
     }
 
     pub fn create(&mut self) -> Result<(), ErrorCode> {
-        let ebpf_pid = generate_ebpf_program()?;
         let pid = generate_child_process(&self.config)?;
+        let ebpf_pid = generate_ebpf_program(self.config.root_path.clone(), pid.as_raw())?;
         restrict_resources(&self.config.hostname, pid)?;
         handle_child_uid_gid_map(pid, self.sockets.0)?;
         self.child_pid = Some(pid);

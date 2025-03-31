@@ -9,18 +9,28 @@ use nix::{
     },
     unistd::{dup2, execve, Pid},
 };
-use std::ffi::CString;
+use std::{ffi::CString, fs, path::PathBuf};
 
 const STACK_SIZE: usize = 1024 * 1024;
 
-fn ebpf_program() -> isize {
+fn ebpf_program(name: String, pid: i32) -> isize {
     log::info!(
         "Starting container with command `{}` and args {:?}",
         "./ecli",
         vec!["run", "package.json"]
     );
 
-    match open("/dev/null", OFlag::O_WRONLY, Mode::empty()) {
+    let path = PathBuf::from(format!(
+        "./logs/{}",
+        name.strip_prefix("/tmp/")
+            .expect("Root path of container is prefix with /tmp")
+    ));
+    if let Err(e) = fs::File::create(&path) {
+        log::error!("Error while executing eBPF program: {:?}", e);
+        return -1;
+    }
+
+    match open(&path, OFlag::O_WRONLY, Mode::empty()) {
         Ok(fd) => {
             let _ = dup2(fd, 1);
             let _ = dup2(fd, 2);
@@ -36,6 +46,8 @@ fn ebpf_program() -> isize {
         &[
             CString::new("run").unwrap(),
             CString::new("package.json").unwrap(),
+            CString::new("--ppid_target").unwrap(),
+            CString::new(format!("{}", pid)).unwrap(),
         ],
         &[],
     ) {
@@ -47,13 +59,13 @@ fn ebpf_program() -> isize {
     }
 }
 
-pub fn generate_ebpf_program() -> Result<Pid, ErrorCode> {
+pub fn generate_ebpf_program(name: String, pid: i32) -> Result<Pid, ErrorCode> {
     log::debug!("Cloning eBPF user process");
 
     let mut tmp_stack: [u8; STACK_SIZE] = [0; STACK_SIZE];
     unsafe {
         match clone(
-            Box::new(|| ebpf_program()),
+            Box::new(|| ebpf_program(name.clone(), pid)),
             &mut tmp_stack,
             CloneFlags::empty(),
             Some(Signal::SIGCHLD as c_int),
