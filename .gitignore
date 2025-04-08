@@ -1,6 +1,7 @@
 /target
 /doc
 /ubuntu-fs
+/curn-tool
 /logs
 *.o
 *.json

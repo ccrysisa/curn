@@ -13,6 +13,7 @@ use nix::{
     sys::{utsname::uname, wait::waitpid},
     unistd::{close, Pid},
 };
+use rand::Rng;
 use std::{os::fd::RawFd, path::PathBuf};
 
 const MINIMAL_KERNEL_VERSION: f64 = 5.4; // kernel version of Ubuntu 20.04 LTS
@@ -61,7 +62,7 @@ impl Container {
 
     pub fn create(&mut self) -> Result<(), ErrorCode> {
         let pid = generate_child_process(&self.config)?;
-        let ebpf_pid = generate_ebpf_program(self.config.root_path.clone(), pid.as_raw())?;
+        let ebpf_pid = generate_ebpf_program(self.config.container_id.clone(), pid.as_raw())?;
         restrict_resources(&self.config.hostname, pid)?;
         handle_child_uid_gid_map(pid, self.sockets.0)?;
         self.child_pid = Some(pid);
@@ -144,4 +145,22 @@ fn wait_child(pid: Option<Pid>) -> Result<(), ErrorCode> {
             Err(ErrorCode::ContainerError(1))
         }
     }
+}
+
+pub fn generate_container_id() -> Result<String, ErrorCode> {
+    Ok(format!("cunrc.{}", random_string(12)))
+}
+
+/// Generate a n-char String
+fn random_string(n: usize) -> String {
+    const CHARSET: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    let mut rng = rand::thread_rng();
+
+    let result: String = (0..n)
+        .map(|_| {
+            let i = rng.gen_range(0..CHARSET.len());
+            CHARSET[i] as char
+        })
+        .collect();
+    result
 }

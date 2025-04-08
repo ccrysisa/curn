@@ -3,18 +3,18 @@ use nix::{
     mount::{mount, umount2, MntFlags, MsFlags},
     unistd::{chdir, pivot_root},
 };
-use rand::Rng;
 use std::{
     fs::{create_dir_all, remove_dir},
     path::PathBuf,
 };
 
 /// Return mounted path, e.g. /tmp/cunrc.xxx...
-pub fn generate_rootpath() -> Result<String, ErrorCode> {
-    Ok(format!("/tmp/cunrc.{}", random_string(12)))
+pub fn generate_rootpath(container_id: &str) -> Result<String, ErrorCode> {
+    Ok(format!("/tmp/{}", container_id))
 }
 
 pub fn set_mounts(
+    container_id: &str,
     mount_dir: &PathBuf,
     root_path: &String,
     add_paths: &Vec<(PathBuf, PathBuf)>,
@@ -79,7 +79,7 @@ pub fn set_mounts(
     // pivot and change working path to the new root
     log::debug!("Pivoting root");
 
-    let old_root_tail = format!("oldroot.{}", random_string(6));
+    let old_root_tail = format!("oldroot.{}", container_id);
     let put_old = new_root.join(&old_root_tail);
     create_directory(&put_old)?;
 
@@ -192,18 +192,4 @@ fn delete_directory(path: &PathBuf) -> Result<(), ErrorCode> {
             Err(ErrorCode::MountError(3))
         }
     }
-}
-
-/// Generate a n-char String
-fn random_string(n: usize) -> String {
-    const CHARSET: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-    let mut rng = rand::thread_rng();
-
-    let result: String = (0..n)
-        .map(|_| {
-            let i = rng.gen_range(0..CHARSET.len());
-            CHARSET[i] as char
-        })
-        .collect();
-    result
 }

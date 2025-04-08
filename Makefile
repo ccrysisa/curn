@@ -11,4 +11,7 @@ clean:
 	@cargo clean
 	@rm -rf *.bpf.o *.json
 
-.PHONY: all debug clean
+logs:
+	@rm -rf logs/*
+
+.PHONY: all debug clean logs
