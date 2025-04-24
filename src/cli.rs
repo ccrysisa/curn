@@ -3,7 +3,10 @@ use std::path::PathBuf;
 use structopt::StructOpt;
 
 #[derive(Debug, StructOpt)]
-#[structopt(name = "cunrc", about = "A simple container in Rust.")]
+#[structopt(
+    name = "cunrc",
+    about = "A lightweight container solution enhanced by eBPF."
+)]
 pub struct Args {
     /// Activate debug mode
     #[structopt(short, long)]
@@ -32,7 +35,7 @@ pub struct Args {
 
 // e.g. curnc --debug --command /bin/bash --mount ../ubuntu-fs --uid 0
 pub fn parse_args() -> Result<Args, ErrorCode> {
-    let args = Args::from_args();
+    let mut args = Args::from_args();
 
     // setup logging level
     if args.debug {
@@ -47,6 +50,17 @@ pub fn parse_args() -> Result<Args, ErrorCode> {
     }
     if !args.mount_dir.exists() || !args.mount_dir.is_dir() {
         return Err(ErrorCode::ArgumentInvaild("mount"));
+    }
+
+    // parse `ecurn` command if tool flag is given
+    let ecmd = "ecurn";
+    let epath = "/curn/";
+    if let Some(_) = args.tool_dir {
+        if let Some(i) = args.command.find(ecmd) {
+            if i == 0 {
+                args.command.replace_range(..ecmd.len() + 1, epath);
+            }
+        }
     }
 
     Ok(args)

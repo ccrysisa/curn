@@ -17,6 +17,11 @@ $ tar xf ubuntu-fs.tar -C ./ubuntu-fs/
 ## Quick Start
 
 ```sh
+# run in release mode
 $ make
 $ ./run.sh
+
+# autotests
+$ make debug
+$ python3 autotests.py
 ```
